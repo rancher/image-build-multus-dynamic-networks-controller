@@ -1,0 +1,63 @@
+---
+name: "Update multus-dnc version" 
+
+sources:
+ multus-dnc:
+   name: Get multus-dnc version
+   kind: githubrelease
+   spec:
+     owner: k8snetworkplumbingwg
+     repository: multus-dynamic-networks-controller
+     token: '{{ requiredEnv .github.token }}'
+     typefilter:
+       release: true
+       draft: false
+       prerelease: false
+     versionfilter:
+       kind: semver
+
+targets:
+  dockerfile:
+    name: "Bump to latest multus-dnc version in Dockerfile"
+    kind: dockerfile
+    scmid: default
+    sourceid: multus-dnc
+    spec:
+      file: "Dockerfile"
+      instruction:
+        keyword: "ARG"
+        matcher: "TAG"
+
+  makefile:
+    name: "Bump to latest multus-dnc version in Makefile"
+    kind: file
+    scmid: default
+    disablesourceinput: true
+    spec:
+      file: Makefile
+      matchpattern: '(?m)^TAG \:\= (.*)'
+      replacepattern: 'TAG := {{ source "multus-dnc" }}$$(BUILD_META)'
+
+scms:
+  default:
+    kind: github
+    spec:
+      token: '{{ requiredEnv .github.token }}'
+      username: '{{ requiredEnv .github.username }}'
+      user: '{{ .github.user }}'
+      email: '{{ .github.email }}'
+      owner: '{{ .github.owner }}'
+      repository: '{{ .github.repository }}'
+      branch: '{{ .github.branch }}'
+      
+actions:
+    default:
+        title: 'Bump multus-dnc version to {{ source "multus-dnc" }}'
+        kind: github/pullrequest
+        spec:
+            automerge: false
+            labels:
+                - chore
+                - skip-changelog
+                - status/auto-created
+        scmid: default
