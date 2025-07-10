@@ -34,6 +34,14 @@ $(error TAG $(TAG) needs to end with build metadata: $(BUILD_META))
 endif
 
 REPO ?= rancher
+IMAGE = $(REPO)/hardened-multus-dynamic-networks-controller:$(TAG)
+
+BUILD_OPTS = \
+	--platform=$(TARGET_PLATFORMS) \
+	--build-arg PKG=$(PKG) \
+	--build-arg SRC=$(SRC) \
+	--build-arg TAG=$(TAG:$(BUILD_META)=) \
+	--tag "$(IMAGE)"
 
 .PHONY: image-build
 image-build:
