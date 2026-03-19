@@ -55,11 +55,15 @@ image-build:
 push-image:
 	docker buildx build \
 		$(BUILD_OPTS) \
+		$(BUILDX_ARGS) \
 		$(IID_FILE_FLAG) \
-		--sbom=true \
-		--attest type=provenance,mode=max \
 		--push \
 		.
+
+.PHONY: push-prime-image
+push-prime-image:
+	BUILDX_ARGS="--sbom=true --attest type=provenance,mode=max" \
+	$(MAKE) push-image
 
 .PHONY: image-scan
 image-scan:
