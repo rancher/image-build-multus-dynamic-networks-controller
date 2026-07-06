@@ -26,7 +26,7 @@ SRC ?= github.com/k8snetworkplumbingwg/multus-dynamic-networks-controller
 TAG ?= ${GITHUB_ACTION_TAG}
 
 ifeq ($(TAG),)
-TAG := v0.3.7$(BUILD_META)
+TAG := v0.3.8$(BUILD_META)
 endif
 
 ifeq (,$(filter %$(BUILD_META),$(TAG)))
