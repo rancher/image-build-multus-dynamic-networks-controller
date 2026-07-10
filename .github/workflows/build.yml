@@ -21,7 +21,7 @@ jobs:
       run: |
         echo "$(make -s log | grep TAG)" >> "$GITHUB_ENV"
     - name: Build container image
-      uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
+      uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
       with:
         context: .
         push: false
@@ -40,7 +40,7 @@ jobs:
         format: 'sarif'
         output: 'trivy-results.sarif'
     - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4
+      uses: github/codeql-action/upload-sarif@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'
@@ -62,7 +62,7 @@ jobs:
       run: |
         echo "$(make -s log | grep TAG)" >> "$GITHUB_ENV"
     - name: Build container image
-      uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
+      uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
       with:
         context: .
         push: false
