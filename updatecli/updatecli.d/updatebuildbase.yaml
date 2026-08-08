@@ -25,8 +25,21 @@ sources:
        draft: false
        prerelease: false
      versionfilter:
-       kind: regex
-       pattern: '{{ source "gomod"}}\.\S+'
+       kind: regex/semver
+       # 1. Convert 'v1.25.12b1' -> 'v1.25.12-b.1'
+       #    Makes it a valid SemVer pre-release that sorts numerically
+       replaceall:
+         pattern: 'b(\d+)$'
+         replacement: '-b.$1'
+       # 2. Extract versions matching the current minor (e.g. v1.25)
+       regex: '(v{{ source "gomod" }}\.\d+.*)'
+       # 3. Constraint '~1.25.0-0': >=1.25.0-0 <1.26.0
+       #    The '-0' floor is required so SemVer evaluates pre-releases
+       #    (every build-base tag is a '-b.N' pre-release).
+       pattern: '~{{ source "gomod" }}.0-0'
+       # Note: regex/semver remaps the result back to the original tag
+       # (e.g. 'v1.25.12b1'), so no transformer is needed to undo the
+       # '-b.' rewrite — the Dockerfile receives the original 'v...bN' form.
 
 targets:
   dockerfile:
