@@ -17,26 +17,15 @@ sources:
        kind: semver
 
 targets:
-  dockerfile:
-    name: "Bump to latest multus-dnc version in Dockerfile"
-    kind: dockerfile
-    scmid: default
-    sourceid: multus-dnc
-    spec:
-      file: "Dockerfile"
-      instruction:
-        keyword: "ARG"
-        matcher: "TAG"
-
-  makefile:
-    name: "Bump to latest multus-dnc version in Makefile"
+  tagfile:
+    name: "Bump to latest multus-dnc version in TAG"
     kind: file
     scmid: default
     disablesourceinput: true
     spec:
-      file: Makefile
-      matchpattern: '(?m)^TAG \:\= (.*)'
-      replacepattern: 'TAG := {{ source "multus-dnc" }}$$(BUILD_META)'
+      file: TAG
+      matchpattern: '(?m)^(.+)$'
+      replacepattern: '{{ source "multus-dnc" }}'
 
 scms:
   default:
