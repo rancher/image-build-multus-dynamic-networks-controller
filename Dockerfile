@@ -14,9 +14,8 @@ RUN set -x && \
 # Build the multus-dynamics-networks-controller project
 FROM base-builder AS multus-builder
 ARG TAG=v0.3.8
-ARG SRC=github.com/k8snetworkplumbingwg/multus-dynamic-networks-controller
 ARG PKG=github.com/k8snetworkplumbingwg/multus-dynamic-networks-controller
-RUN git clone --depth=1 https://${SRC}.git $GOPATH/src/${PKG}
+RUN git clone --depth=1 https://${PKG}.git $GOPATH/src/${PKG}
 WORKDIR $GOPATH/src/${PKG}
 RUN git fetch --all --tags --prune && \
     git checkout tags/${TAG} -b ${TAG}
