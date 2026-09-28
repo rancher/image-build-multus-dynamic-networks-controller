@@ -8,14 +8,17 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  issues: write
-  pull-requests: write
+  contents: read
 
 jobs:
   updatecli:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      issues: write
+      id-token: write
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -27,6 +30,21 @@ jobs:
 
       - name: Install Updatecli
         uses: updatecli/updatecli-action@41b9c8d707830a9daebaeaa84c1b62d60b779564 # v3.6.0
+
+      - name: Load Secrets from Vault
+        id: secrets
+        uses: rancher/eio-workflow-actions/secrets@main
+        with:
+          secrets: |
+            RENOVATE_RANCHER_APP_ID=renovate-rancher-app-id
+            RENOVATE_RANCHER_APP_PRIVATE_KEY=renovate-rancher-app-private-key
+
+      - name: Generate App Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ steps.secrets.outputs.RENOVATE_RANCHER_APP_ID }}
+          private-key: ${{ steps.secrets.outputs.RENOVATE_RANCHER_APP_PRIVATE_KEY }}
 
       - name: Delete leftover UpdateCLI branches
         run: |
@@ -49,7 +67,7 @@ jobs:
 
       - name: Apply Updatecli
         # Never use '--debug' option, because it might leak the access tokens.
-        run: "updatecli apply --clean --config ./updatecli/updatecli.d/ --values ./updatecli/values.yaml"
+        run: "updatecli pipeline apply --clean --config ./updatecli/updatecli.d/ --values ./updatecli/values.yaml"
         env:
-          UPDATECLI_GITHUB_ACTOR: ${{ github.actor }}
-          UPDATECLI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UPDATECLI_GITHUB_ACTOR: renovate-rancher[bot]
+          UPDATECLI_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
