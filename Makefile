@@ -1,14 +1,6 @@
 SEVERITIES = HIGH,CRITICAL
 
 UNAME_M = $(shell uname -m)
-ARCH=
-ifeq ($(UNAME_M), x86_64)
-	ARCH=amd64
-else ifeq ($(UNAME_M), aarch64)
-	ARCH=arm64
-else 
-	ARCH=$(UNAME_M)
-endif
 
 ifndef TARGET_PLATFORMS
 	ifeq ($(UNAME_M), x86_64)
@@ -21,8 +13,6 @@ ifndef TARGET_PLATFORMS
 endif
 
 BUILD_META=-build$(shell date +%Y%m%d)
-PKG ?= github.com/k8snetworkplumbingwg/multus-dynamic-networks-controller
-SRC ?= github.com/k8snetworkplumbingwg/multus-dynamic-networks-controller
 TAG ?= ${GITHUB_ACTION_TAG}
 
 ifeq ($(TAG),)
@@ -38,8 +28,6 @@ IMAGE = $(REPO)/hardened-multus-dynamic-networks-controller:$(TAG)
 
 BUILD_OPTS = \
 	--platform=$(TARGET_PLATFORMS) \
-	--build-arg PKG=$(PKG) \
-	--build-arg SRC=$(SRC) \
 	--build-arg TAG=$(TAG:$(BUILD_META)=) \
 	--tag "$(IMAGE)"
 
@@ -74,8 +62,6 @@ log:
 	@echo "TAG=$(TAG:$(BUILD_META)=)"
 	@echo "REPO=$(REPO)"
 	@echo "IMAGE=$(IMAGE)"
-	@echo "PKG=$(PKG)"
-	@echo "SRC=$(SRC)"
 	@echo "BUILD_META=$(BUILD_META)"
 	@echo "UNAME_M=$(UNAME_M)"
 	@echo "TARGET_PLATFORMS=$(TARGET_PLATFORMS)"
