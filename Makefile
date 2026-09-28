@@ -33,10 +33,10 @@ BUILD_OPTS = \
 
 .PHONY: image-build
 image-build:
-	docker build \
+	docker buildx build \
 		$(BUILD_OPTS) \
-		--pull \
 		--progress=plain \
+		--load \
 		.
 
 .PHONY: push-image
