@@ -2,6 +2,24 @@
 name: "Update build base version" 
 
 sources:
+  # Read the current build base minor from the Dockerfile. Driving the
+  # floor from the current Dockerfile value preserves a manual forward
+  # minor bump (we never select a minor below what is already pinned).
+  current_minor:
+    name: Get current build base minor version from Dockerfile
+    kind: dockerfile
+    spec:
+      file: Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: GO_IMAGE
+    transformers:
+      - trimprefix: "rancher/hardened-build-base:"
+      - trimprefix: "v"
+      - findsubmatch:
+          pattern: '^([0-9]+\.[0-9]+)'
+          captureindex: 1
+
   gomod:
     name: Get latest Golang version based on go.mod
     kind: file
@@ -11,11 +29,23 @@ sources:
     transformers:
       - trimprefix: "go "
 
+  # Floor minor = max(current Dockerfile minor, upstream go.mod minor).
+  #   - upstream ahead -> follow upstream forward
+  #   - current ahead  -> preserve the manual forward bump
+  floor_minor:
+    name: Highest of the current and upstream golang minor
+    kind: shell
+    dependson:
+      - current_minor
+      - gomod
+    spec:
+      command: 'printf "%s\n%s\n" "{{ source "current_minor" }}" "{{ source "gomod" }}" | sort -V | tail -n1'
+
   buildbase:
    name: Get build base version
    kind: githubrelease
    dependson:
-     - "gomod"
+     - "floor_minor"
    spec:
      owner: rancher
      repository: image-build-base
@@ -32,11 +62,11 @@ sources:
          pattern: 'b(\d+)$'
          replacement: '-b.$1'
        # 2. Extract versions matching the current minor (e.g. v1.25)
-       regex: '(v{{ source "gomod" }}\.\d+.*)'
+       regex: '(v{{ source "floor_minor" }}\.\d+.*)'
        # 3. Constraint '~1.25.0-0': >=1.25.0-0 <1.26.0
        #    The '-0' floor is required so SemVer evaluates pre-releases
        #    (every build-base tag is a '-b.N' pre-release).
-       pattern: '~{{ source "gomod" }}.0-0'
+       pattern: '~{{ source "floor_minor" }}.0-0'
        # Note: regex/semver remaps the result back to the original tag
        # (e.g. 'v1.25.12b1'), so no transformer is needed to undo the
        # '-b.' rewrite — the Dockerfile receives the original 'v...bN' form.
@@ -77,4 +107,3 @@ actions:
       labels:
         - updatecli
     scmid: default
-
